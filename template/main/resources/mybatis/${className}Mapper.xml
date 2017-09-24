@@ -1,0 +1,123 @@
+<#include "/macro.include"/>
+<#assign className = table.className>   
+<#assign classNameFirstLower = table.classNameFirstLower>   
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<#macro mapperEl value>${r"#{"}${value}}</#macro>
+<#macro namespace>${className}Mapper.</#macro>
+
+<mapper namespace="${className}Mapper">
+
+	<resultMap id="mRetMap${className}" type="${basepackage}.model.${className}Model">
+        <#list table.columns as column>
+        <result property="${column.columnNameLower}" column="${column.sqlName}"/>
+		</#list>
+	</resultMap>
+	
+	<!-- 用于select查询公用抽取的列 -->
+	<sql id="<@namespace/>columns">
+	    <![CDATA[
+		<#list table.columns as column>${column.sqlName}<#if column_has_next>,</#if></#list>
+	    ]]>
+	</sql>
+
+	<!-- useGeneratedKeys="true" keyProperty="xxx" for sqlserver and mysql -->
+	<insert id="<@namespace/>insert" useGeneratedKeys="true" keyProperty="${table.idColumn.columnNameFirstLower}">
+    <![CDATA[
+        INSERT INTO ${table.sqlName} (
+        <#list table.columns as column>
+        	${column.sqlName} <#if column_has_next>,</#if>
+        </#list>
+        ) VALUES (
+        <#list table.columns as column>
+        	<@mapperEl column.columnNameFirstLower/> <#if column_has_next>,</#if>
+        </#list>        
+        )
+    ]]>
+	</insert>
+    
+	<update id="<@namespace/>update" >
+    <![CDATA[
+        UPDATE ${table.sqlName} SET
+	        <#list table.notPkColumns as column>
+	        ${column.sqlName} = <@mapperEl column.columnNameFirstLower/> <#if column_has_next>,</#if>
+	        </#list>
+        WHERE 
+        	<#list table.compositeIdColumns as column>
+	        ${column.sqlName} = <@mapperEl column.columnNameLower/> <#if column_has_next> AND </#if>
+	        </#list>	        
+    ]]>
+	</update>
+
+    <delete id="<@namespace/>delete">
+    <![CDATA[
+        DELETE FROM ${table.sqlName} WHERE
+        <#list table.compositeIdColumns as column>
+        ${column.sqlName} = <@mapperEl 'id'/> <#if column_has_next> AND </#if>
+		</#list>
+    ]]>
+    </delete>
+    
+    <select id="<@namespace/>getById" resultMap="mRetMap${className}">
+		SELECT <include refid="<@namespace/>columns" />
+	    <![CDATA[
+		    FROM ${table.sqlName} 
+	        WHERE 
+				<#list table.compositeIdColumns as column>
+		        ${column.sqlName} = <@mapperEl 'id'/> <#if column_has_next> AND </#if>
+		        </#list>    
+	    ]]>
+	</select>
+	
+	<sql id="<@namespace/>findPage.where">
+		<where>	      				
+	       <#list table.columns as column>
+	       <#if column.isDateTimeColumn>
+	       <if test="@com.gesoft.util.Ognl@isNotEmpty(${column.columnNameFirstLower}Begin)">
+				AND ${column.sqlName} >= <@mapperEl column.columnNameFirstLower+"Begin"/>
+		   </if>
+		   <if test="@com.gesoft.util.Ognl@isNotEmpty(${column.columnNameFirstLower}End)">
+				AND ${column.sqlName} &lt;= <@mapperEl column.columnNameFirstLower+"End"/>
+		   </if>
+	       <#else>
+	       <if test="@com.gesoft.util.Ognl@isNotEmpty(${column.columnNameFirstLower})">
+				AND ${column.sqlName} = <@mapperEl column.columnNameFirstLower/>
+			</if>
+	       </#if>
+	       </#list>			
+		</where>
+	</sql>
+		
+    <select id="<@namespace/>count" resultType="long">
+        SELECT count(*) FROM ${table.sqlName} 
+		<include refid="<@namespace/>findPage.where"/>    
+    </select>
+    
+    <!-- 分页查询 -->
+    <select id="<@namespace/>list" resultMap="mRetMap${className}">
+    	SELECT <include refid="<@namespace/>columns" />
+	    FROM ${table.sqlName} 
+		<include refid="<@namespace/>findPage.where"/>
+		
+		<if test="@com.gesoft.util.Ognl@isNotEmpty(sortColumns)">
+			ORDER BY <@jspEl 'sortColumns'/>
+		</if>
+		
+		LIMIT <@mapperEl 'startNum'/>, <@mapperEl 'pageSize'/>
+    </select>
+
+    <#list table.columns as column>
+    <#if column.unique && !column.pk>
+    <select id="<@namespace/>getBy${column.columnName}" resultMap="mRetMap${className}" parameterType="${column.javaType}">
+	    SELECT <include refid="<@namespace/>columns"/>
+	    <![CDATA[
+	        FROM ${table.sqlName} where ${column.sqlName} = <@mapperEl column.columnNameLower/>
+	    ]]>
+    </select>
+    
+    </#if>
+	</#list>
+	
+</mapper>
+

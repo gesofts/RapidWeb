@@ -1,0 +1,21 @@
+import java.util.*;
+
+import javacommon.base.*;
+import javacommon.util.*;
+
+import cn.org.rapid_framework.util.*;
+import cn.org.rapid_framework.web.util.*;
+import cn.org.rapid_framework.page.*;
+import cn.org.rapid_framework.page.impl.*;
+
+import ${basepackage}.model.*;
+import ${basepackage}.dao.*;
+import ${basepackage}.service.*;
+import ${basepackage}.vo.query.*;
+
+/**
+ * @author HY（ln_admin@yeah.net）
+ * @version v1.001
+ * @since   v1.001
+ */
+ 

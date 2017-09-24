@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="generator/src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="com.genuitec.eclipse.j2eedt.core.J2EE14_CONTAINER"/>
+	<classpathentry kind="lib" path="generator/lib/freemarker.jar"/>
+	<classpathentry kind="lib" path="generator/lib/mysql-connector-java-5.0.5-bin.jar"/>
+	<classpathentry kind="lib" path="generator/lib/ojdbc14.jar"/>
+	<classpathentry kind="lib" path="generator/lib/rapid-generator-3.9.3.20100923.jar"/>
+	<classpathentry kind="lib" path="generator/lib/rapid-generator-3.9.3.20100923-source.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
+	<classpathentry kind="output" path="web/WEB-INF/classes"/>
+</classpath>
